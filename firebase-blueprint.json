@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "TeamMember": {
+      "title": "TeamMember",
+      "description": "Recruiter, Project Manager, or Agency Leadership user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["recruiter", "pm", "admin"] },
+        "team": { "type": "string", "maxLength": 100 },
+        "avatar": { "type": "string", "maxLength": 1000 },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "role", "team", "email"]
+    },
+    "ClientCompany": {
+      "title": "ClientCompany",
+      "description": "Client company account with hiring requirements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "industry": { "type": "string", "maxLength": 100 },
+        "assignedPmId": { "type": "string", "maxLength": 128 },
+        "contactPerson": { "type": "string", "maxLength": 100 },
+        "contactEmail": { "type": "string", "maxLength": 200 },
+        "contactPhone": { "type": "string", "maxLength": 50 },
+        "activeRoles": { "type": "array" },
+        "notes": { "type": "string", "maxLength": 2000 }
+      },
+      "required": ["id", "name", "assignedPmId", "contactPerson", "contactEmail"]
+    },
+    "Candidate": {
+      "title": "Candidate",
+      "description": "Candidate undergoing recruitment workflow and interview handoffs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "targetRole": { "type": "string", "maxLength": 150 },
+        "targetClientId": { "type": "string", "maxLength": 128 },
+        "assignedRecruiterId": { "type": "string", "maxLength": 128 },
+        "assignedPmId": { "type": "string", "maxLength": 128 },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "cv_screening",
+            "submitted_to_pm",
+            "forwarded_to_client",
+            "date_negotiation",
+            "interview_scheduled",
+            "post_interview_debrief",
+            "offer_stage",
+            "placed",
+            "rejected"
+          ]
+        },
+        "actionOwner": { "type": "string", "enum": ["recruiter", "pm", "none"] },
+        "actionDescription": { "type": "string", "maxLength": 500 },
+        "experienceYears": { "type": "number" },
+        "keySkills": { "type": "array" },
+        "currentCompany": { "type": "string", "maxLength": 150 },
+        "revisedCvSummary": { "type": "string", "maxLength": 4000 },
+        "negotiationRound": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 100 },
+        "updatedAt": { "type": "string", "maxLength": 100 }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "targetRole",
+        "targetClientId",
+        "assignedRecruiterId",
+        "assignedPmId",
+        "stage",
+        "actionOwner"
+      ]
+    },
+    "DirectChatMessage": {
+      "title": "DirectChatMessage",
+      "description": "Direct chat messages and pipeline nudges between PMs, Owner, and Team X members",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "candidateId": { "type": "string", "maxLength": 128 },
+        "candidateName": { "type": "string", "maxLength": 150 },
+        "candidateStage": { "type": "string", "maxLength": 50 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "senderRole": { "type": "string", "enum": ["recruiter", "pm", "admin"] },
+        "recipientId": { "type": "string", "maxLength": 128 },
+        "recipientName": { "type": "string", "maxLength": 100 },
+        "recipientRole": { "type": "string", "enum": ["recruiter", "pm", "admin"] },
+        "text": { "type": "string", "maxLength": 2000 },
+        "isUrgentNudge": { "type": "boolean" },
+        "isImportantDetail": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 100 },
+        "read": { "type": "boolean" },
+        "archived": { "type": "boolean" }
+      },
+      "required": ["id", "senderId", "senderName", "senderRole", "recipientId", "recipientName", "recipientRole", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "TeamMember",
+      "description": "Registered team members and recruiters"
+    },
+    "/clients/{clientId}": {
+      "schema": "ClientCompany",
+      "description": "Client company profiles and job openings"
+    },
+    "/candidates/{candidateId}": {
+      "schema": "Candidate",
+      "description": "Candidates tracked across recruitment stages and interview coordination"
+    },
+    "/direct_chats/{chatId}": {
+      "schema": "DirectChatMessage",
+      "description": "Direct real-time messages and urgent pipeline nudges between PMs/Leadership and Team X members"
+    }
+  }
+}

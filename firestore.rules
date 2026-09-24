@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Validation primitives
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Health check / connection test
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Entity: Team Member
+    function isValidTeamMember(data) {
+      return data.keys().hasAll(['id', 'name', 'role', 'team', 'email']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.role is string && (data.role == 'recruiter' || data.role == 'pm' || data.role == 'admin') &&
+        data.team is string && data.team.size() <= 100 &&
+        data.email is string && data.email.size() <= 200;
+    }
+
+    match /members/{memberId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(memberId) && isValidTeamMember(incoming());
+      allow delete: if isValidId(memberId);
+    }
+
+    // Entity: Client Company
+    function isValidClient(data) {
+      return data.keys().hasAll(['id', 'name', 'assignedPmId', 'contactPerson', 'contactEmail']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+        data.assignedPmId is string && data.assignedPmId.size() <= 128 &&
+        data.contactPerson is string && data.contactPerson.size() <= 100 &&
+        data.contactEmail is string && data.contactEmail.size() <= 200;
+    }
+
+    match /clients/{clientId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(clientId) && isValidClient(incoming());
+      allow delete: if isValidId(clientId);
+    }
+
+    // Entity: Candidate
+    function isValidCandidate(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'targetRole', 'targetClientId', 'assignedRecruiterId', 'assignedPmId', 'stage', 'actionOwner']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+        data.email is string && data.email.size() <= 200 &&
+        data.targetRole is string && data.targetRole.size() <= 150 &&
+        data.targetClientId is string && data.targetClientId.size() <= 128 &&
+        data.assignedRecruiterId is string && data.assignedRecruiterId.size() <= 128 &&
+        data.assignedPmId is string && data.assignedPmId.size() <= 128 &&
+        data.stage is string &&
+        data.actionOwner is string && (data.actionOwner == 'recruiter' || data.actionOwner == 'pm' || data.actionOwner == 'none');
+    }
+
+    match /candidates/{candidateId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(candidateId) && isValidCandidate(incoming());
+      allow delete: if isValidId(candidateId);
+    }
+
+    // Entity: DirectChatMessage
+    function isValidDirectChat(data) {
+      return data.keys().hasAll(['id', 'senderId', 'senderName', 'senderRole', 'recipientId', 'recipientName', 'recipientRole', 'text', 'createdAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.senderId is string && data.senderId.size() <= 128 &&
+        data.senderName is string && data.senderName.size() <= 100 &&
+        data.recipientId is string && data.recipientId.size() <= 128 &&
+        data.recipientName is string && data.recipientName.size() <= 100 &&
+        data.text is string && data.text.size() <= 2000;
+    }
+
+    match /direct_chats/{chatId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(chatId) && isValidDirectChat(incoming());
+      allow delete: if isValidId(chatId);
+    }
+  }
+}

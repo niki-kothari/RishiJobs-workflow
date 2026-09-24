@@ -1,0 +1,6 @@
+{
+  "name": "Rishi Jobs",
+  "description": "Recruitment platform for Rishi Jobs coordinating candidates, clients, and interview scheduling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
